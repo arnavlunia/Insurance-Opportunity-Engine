@@ -1,81 +1,70 @@
-import math
 import random
 
 def calculate_score(client, events):
 
-    score = 0.0
+    score = 0
     reasons = []
 
     event_types = [e.event for e in events]
 
     # -------------------------
-    # BASE SIGNALS (0–60 range max)
+    # DEMOGRAPHIC SIGNALS
     # -------------------------
 
     if 28 <= client.age <= 40:
         score += 8
         reasons.append("Prime financial planning age")
 
-    if client.salary > 1000000:
-        score += 10
+    if client.salary > 2000000:
+        score += 6
         reasons.append("High income segment")
 
     if client.married:
-        score += 6
-        reasons.append("Married → family protection need")
+        score += 5
+        reasons.append("Married → family protection")
 
     if client.children > 0:
-        score += 10
+        score += 8
         reasons.append("Has children → insurance need")
 
-    if client.sip_amount > 20000:
-        score += 8
+    if client.sip_amount > 30000:
+        score += 6
         reasons.append("Strong investment behavior")
 
     # -------------------------
-    # BEHAVIOR SIGNALS (HIGH IMPACT)
+    # BEHAVIOR SIGNALS
     # -------------------------
 
     if "insurance_page_view" in event_types:
-        score += 12
+        score += 8
         reasons.append("Viewed insurance page")
 
     if "term_insurance_view" in event_types:
-        score += 15
+        score += 10
         reasons.append("Viewed term insurance")
 
     if "child_plan_calculator" in event_types:
-        score += 12
+        score += 10
         reasons.append("Used child plan calculator")
 
     if "add_nominee" in event_types:
-        score += 10
+        score += 6
         reasons.append("Added nominee")
 
     if "search_insurance" in event_types:
-        score += 8
+        score += 5
         reasons.append("Searched insurance")
 
-    # -------------------------
-    # NORMALIZATION (IMPORTANT FIX)
-    # -------------------------
-
-    # convert to probability space
-    score = score / 80.0   # max theoretical ~80
-
-    # sigmoid compression (VERY IMPORTANT)
-    score = 1 / (1 + math.exp(-8 * (score - 0.5)))
-
-    # scale to 0–100
-    score = score * 100
+    if "sip_increase" in event_types:
+        score += 8
+        reasons.append("Increased SIP")
 
     # -------------------------
-    # SMALL NOISE (NOT DESTROYING RANKING)
+    # NORMALIZATION
     # -------------------------
 
-    score += random.uniform(-2, 2)
+    score = min(score, 80)
+    score = (score / 80) * 100
+    score += random.uniform(-1.5, 1.5)
 
-    # clamp
-    score = max(0, min(100, score))
-
-    return round(score, 2), reasons
+    return round(max(0, min(100, score)), 2), reasons

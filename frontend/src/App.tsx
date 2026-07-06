@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getOpportunities } from "./api/client";
+import ClientCard from "./components/ClientCard";
+import StatsBar from "./components/StatsBar";
 
 type Client = {
   client_id: number;
@@ -20,36 +22,42 @@ export default function App() {
   useEffect(() => {
     getOpportunities()
       .then((data) => {
-        console.log("RAW API:", data);   
-  
+        console.log("RAW API:", data);
         setClients(data.opportunities || data || []);
       })
       .catch(console.error);
   }, []);
 
+  const hot = clients.filter((c) => c.segment === "HOT").length;
+  const warm = clients.filter((c) => c.segment === "WARM").length;
+  const cold = clients.filter((c) => c.segment === "COLD").length;
+
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1>Insurance Opportunity Engine</h1>
+    <div
+      style={{
+        background: "#f4f6f9",
+        minHeight: "100vh",
+        padding: "40px",
+        fontFamily: "Arial"
+      }}
+    >
+      <h1 style={{ marginBottom: "30px" }}>
+        Atlas AI Insurance Opportunity Engine
+      </h1>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        {clients.map((c) => (
-          <div key={c.client_id} style={{ border: "1px solid #ccc", padding: 12 }}>
-            <h3>{c.name}</h3>
-            <p>Score: {c.score}</p>
-            <p>Segment: {c.segment}</p>
+      <StatsBar
+        hot={hot}
+        warm={warm}
+        cold={cold}
+        total={clients.length}
+      />
 
-            <strong>Reasons:</strong>
-            <ul>
-              {(c.reasons || []).map((r, i) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
-
-            <p><b>Next Action:</b> {c.next_best_action?.action}</p>
-            <p>{c.next_best_action?.message}</p>
-          </div>
-        ))}
-      </div>
+      {clients.map((client) => (
+        <ClientCard
+          key={client.client_id}
+          client={client}
+        />
+      ))}
     </div>
   );
 }
