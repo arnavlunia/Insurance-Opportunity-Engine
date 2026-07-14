@@ -1,22 +1,21 @@
-def next_best_action(client, score):
+def next_best_action(client, segment):
 
-    if score >= 75:
+    if segment == "HOT":
         return {
             "action": "CALL_IMMEDIATELY",
             "product": "Term Insurance + Health Insurance",
-            "message": "High intent user — prioritize call today"
+            "message": "High intent user — prioritize today."
         }
 
-    elif score >= 50:
+    elif segment == "WARM":
         return {
             "action": "SEND_WHATSAPP",
             "product": "Child Plan / Retirement Plan",
-            "message": "Warm lead — nurture with content"
+            "message": "Warm lead — nurture with content."
         }
 
-    else:
-        return {
-            "action": "MONITOR",
-            "product": None,
-            "message": "Low intent — no action needed"
-        }
+    return {
+        "action": "MONITOR",
+        "product": "-",
+        "message": "No immediate outreach required."
+    }

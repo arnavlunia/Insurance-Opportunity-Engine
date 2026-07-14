@@ -5,7 +5,7 @@ from app.db.session import get_db
 from app.models.client import Client
 from app.models.event import Event
 
-from app.services.scoring_service import evaluate_client
+from app.services.opportunity_service import build_opportunities
 
 router = APIRouter()
 
@@ -15,42 +15,11 @@ router = APIRouter()
 # -----------------------------
 @router.get("/opportunities")
 def get_opportunities(db: Session = Depends(get_db)):
-
-    clients = db.query(Client).all()
-
-    results = []
-
-    for client in clients:
-
-        events = (
-            db.query(Event)
-            .filter(Event.client_id == client.id)
-            .all()
-        )
-
-        scored_client = evaluate_client(client, events)
-
-        results.append({
-            "client_id": client.id,
-            "name": client.name,
-            "score": scored_client.get("score", 0),
-            "segment": scored_client.get("segment", "low"),
-            "reasons": scored_client.get("reasons", []),
-            "next_best_action": scored_client.get("next_best_action", {
-                "action": "Nurture",
-                "product": "N/A",
-                "message": "Insufficient signals"
-            })
-        })
-
-    # Sort by score descending
-    results.sort(key=lambda x: x["score"], reverse=True)
-
-    return results
+    return build_opportunities(db)
 
 
 # -----------------------------
-# DEBUG ENDPOINT (DATA INSPECTION)
+# DEBUG ENDPOINT
 # -----------------------------
 @router.get("/debug/opportunities")
 def debug_opportunities(db: Session = Depends(get_db)):
